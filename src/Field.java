@@ -11,16 +11,23 @@ import java.util.List;
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 
-public class Field implements DrawListener {
 
+public class Field implements DrawListener {
+    private static final double LAMBDA = 5.0;
     private static final int SIZE_X = 1500;
     private static final int SIZE_Y = 1000;
+    private static final int POWER = -14;
+    private static final int SENSIBILITY = -110;
+
     private static final int pixel_shape = 3;
     private final Point[][] nearest = new Point[SIZE_X][SIZE_Y];  // which point is pixel (i, j) nearest?
     private final Draw draw = new Draw();
-    private List<Sensor> sensorList = new ArrayList<>();
 
-    public Field() {
+    private List<Sensor> sensorList = new ArrayList<>();
+    private int length;
+    private int heigth;
+
+    public Field(int length,int height) {
         draw.setCanvasSize(1440, 820);
         draw.setXscale(0, SIZE_X);
         draw.setYscale(0, SIZE_Y);
@@ -28,13 +35,24 @@ public class Field implements DrawListener {
         draw.clear(Color.GRAY);
         //draw.picture(750, 500, "sfondo-grigio-scuro1.jpg");
         draw.show(20);
+
+        this.length=length;
+        this.heigth=height;
+        int id=0;
+        for(int i = 300; i <=length; i+=300)
+            for (int j = 303; j <= height; j+=303){
+                addSensor(new Sensor(id++, Forest.rand(i-300,i), Forest.rand(j-303,j), POWER, SENSIBILITY,LAMBDA));
+            }
+
+
     }
 
-    List<Sensor> myNeighbors(Sensor s1) {
+
+    List<Sensor> findNeighbors(Sensor s1) {
         List<Sensor> neighbors= new ArrayList<>();
         for (Sensor s2 : sensorList){
             if(s2 != s1){
-                if(sqrt(pow(s1.x_position - s2.x_position, 2) + pow(s1.y_position - s2.y_position, 2)) <= s1.distance())  //formula calcolo massima distanza di trasmissione SPL
+                if(sqrt(pow(s1.getX_position() - s2.getX_position(), 2) + pow(s1.getY_position() - s2.getY_position(), 2)) <= s1.distance())  //formula calcolo massima distanza di trasmissione SPL
                     neighbors.add(s2);
             }
         }
@@ -48,18 +66,18 @@ public class Field implements DrawListener {
     void displaySensor(){
         System.out.println(sensorList.size());
         for (Sensor s : sensorList){
-            System.out.println("(x: " + s.x_position + ", y:" + s.y_position + ")");
+            System.out.println("(x: " + s.getX_position() + ", y:" + s.getY_position() + ")");
         }
     }
 
     void setNeighbors() {
         for (Sensor s : sensorList)
-            s.setNeighbors();
+            s.setNeighbors(findNeighbors(s));
     }
 
     void showNeighborsId(int id){
         for(Sensor s : sensorList.get(id).getNeighbors())
-            System.out.println(s.id +" (x: " + s.x_position + ", y:" + s.y_position + ")");
+            System.out.println(s.getId() +" (x: " + s.getX_position() + ", y:" + s.getY_position() + ")");
     }
 
     public int mediumDistribution(){
@@ -71,7 +89,7 @@ public class Field implements DrawListener {
             max = s.getNeighbors().size() > max ? s.getNeighbors().size() : max;
             cont += s.getNeighbors().size();
         }
-        System.out.println("min : " + min.getNeighbors().size() + " (x : " + min.x_position +", y: " +min.y_position + ") max : " + max);
+        System.out.println("min : " + min.getNeighbors().size() + " (x : " + min.getX_position() +", y: " +min.getY_position() + ") max : " + max);
         return cont/sensorList.size();
     }
 
@@ -86,6 +104,7 @@ public class Field implements DrawListener {
     public List<Sensor> getSensorList() {
         return sensorList;
     }
+
 
 
     /* -----------------------------------------------------------------------------------------------------------------
@@ -107,7 +126,7 @@ public class Field implements DrawListener {
     /*RIMOSSO ANTI-ALIASING Draw.java line 264 */
 
     public void drawSensor(Sensor s) {
-        Point p = new Point(s.x_position, s.y_position);
+        Point p = new Point(s.getX_position(), s.getY_position());
         System.out.println("Inserting:       " + p);
 
         // compare each pixel (i, j) and find nearest point
@@ -126,8 +145,8 @@ public class Field implements DrawListener {
         // draw the point afterwards
         draw.setPenRadius(0.003);
         draw.setPenColor(Color.BLACK);
-        draw.filledSquare(s.x_position/10, s.y_position/10, pixel_shape);
-        draw.circle(s.x_position/10, s.y_position/10, (int)s.distance() /10);
+        draw.filledSquare(s.getX_position()/10, s.getY_position()/10, pixel_shape);
+        draw.circle(s.getX_position()/10, s.getY_position()/10, (int)s.distance() /10);
         System.out.println("Done processing: " + p);
     }
 
@@ -144,8 +163,8 @@ public class Field implements DrawListener {
     }
 
     private void colorSensorPoint(Sensor s, Color color){
-        int x = s.x_position / 10;
-        int y = s.y_position / 10;
+        int x = s.getX_position() / 10;
+        int y = s.getY_position() / 10;
         draw.setPenColor(color);
         draw.filledSquare(x, y, pixel_shape);
         draw.circle(x, y, (int)s.distance()/10);

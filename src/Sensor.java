@@ -15,28 +15,56 @@ import static java.lang.Math.pow;
  *
  * @author Alessio
  */
-public class Sensor {
-    public int id;
-    int x_position;
-    int y_position;
-    int power;
-    int sensibility;
-    int state;
-    double next_transmission;
+public class Sensor implements Comparable<Sensor> {
+    private int id;
+    private int x_position;
+    private int y_position;
+    private int power;
+    private int sensibility;
+    private int state;
+    private Double next_transmission;
     
     List<Sensor> neighbors = new ArrayList<>();
     
-    public Sensor(int id, int x_position, int y_position, int power, int sensibility) {
+    public Sensor(int id, int x_position, int y_position, int power, int sensibility,double lambda) {
         this.id = id;
-        this.x_position = x_position <= Forest.max_x ? x_position : Forest.max_x;
-        this.y_position = y_position <= Forest.max_y ? y_position : Forest.max_y;
+        this.x_position = x_position ;
+        this.y_position = y_position ;
         this.power = power;
         this.sensibility = sensibility;
-        this.next_transmission = -log(ThreadLocalRandom.current().nextDouble(0, 1)) / 7.0;
+        this.next_transmission = Forest.exp(lambda);
     }
 
-    public void setNeighbors() {
-        neighbors = Forest.field.myNeighbors(this);
+    public int getId() {
+        return id;
+    }
+
+    public int getX_position() {
+        return x_position;
+    }
+
+    public int getY_position() {
+        return y_position;
+    }
+
+    public int getPower() {
+        return power;
+    }
+
+    public int getSensibility() {
+        return sensibility;
+    }
+
+    public int getState() {
+        return state;
+    }
+
+    public double getNext_transmission() {
+        return next_transmission;
+    }
+
+    public void setNeighbors(List<Sensor> sensors) {
+        neighbors = sensors ;
     }
 
     public List<Sensor> getNeighbors() {
@@ -45,5 +73,10 @@ public class Sensor {
     
     public double distance(){
         return pow(10, (-sensibility + power - (20*log10(100) + 20*log10(0.9*pow(10,9)) - 147.55))/35)*100;
+    }
+
+    @Override
+    public int compareTo(Sensor o) {
+        return next_transmission.compareTo(o.getNext_transmission());
     }
 }
