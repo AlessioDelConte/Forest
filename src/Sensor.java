@@ -25,14 +25,19 @@ public class Sensor implements Comparable<Sensor> {
     private Double next_transmission;
     
     List<Sensor> neighbors = new ArrayList<>();
-    
-    public Sensor(int id, int x_position, int y_position, int power, int sensibility,double lambda) {
+
+    public void setNext_transmission(Double next_transmission) {
+        this.next_transmission = next_transmission;
+    }
+
+    public Sensor(int id, int x_position, int y_position, int power, int sensibility, double lambda) {
         this.id = id;
         this.x_position = x_position ;
         this.y_position = y_position ;
         this.power = power;
         this.sensibility = sensibility;
         this.next_transmission = Forest.exp(lambda);
+
     }
 
     public int getId() {
