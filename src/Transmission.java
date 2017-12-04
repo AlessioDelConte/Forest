@@ -9,6 +9,8 @@ public class Transmission implements Comparable<Transmission>{
         this.remaining_time =remaining_time;
         this.sender = sender;
         this.receiver = receiver;
+        sender.setState(1);
+        receiver.setState(2);
     }
 
     public void setRemaining_time(double remaining_time) {
