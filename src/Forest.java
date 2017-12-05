@@ -5,6 +5,7 @@
  */
 
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static java.lang.Math.log;
@@ -14,18 +15,14 @@ import static java.lang.Math.log;
  * @author Alessio
  */
 public class Forest {
-
-
-
     public static void main(String[] args) throws InterruptedException {
-        int id = 0;
-
-
         Field field = new Field (15000,10000);
+
         field.setNeighbors();
         for(Sensor s: field.getSensorList())
             field.drawSensor(s);
         field.show();
+
         field.runSimulation();
 
 

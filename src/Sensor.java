@@ -6,10 +6,8 @@
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
 import static java.lang.Math.log10;
-import static java.lang.Math.log;
 import static java.lang.Math.pow;
 /**
  *
@@ -22,12 +20,12 @@ public class Sensor implements Comparable<Sensor> {
     private int power;
     private int sensibility;
     private int state;      // 0: ascolto; 1: invio; 2:ricezione
-    private Double next_transmission;
-    
+    private Double nextTransmission;
+
     private List<Sensor> neighbors = new ArrayList<>();
 
-    public void setNext_transmission(Double next_transmission) {
-        this.next_transmission = next_transmission;
+    public void setNextTransmission(Double nextTransmission) {
+        this.nextTransmission = nextTransmission;
     }
 
     public Sensor(int id, int x_position, int y_position, int power, int sensibility, double lambda) {
@@ -36,16 +34,17 @@ public class Sensor implements Comparable<Sensor> {
         this.y_position = y_position ;
         this.power = power;
         this.sensibility = sensibility;
-        this.next_transmission = Forest.exp(lambda);
+        this.nextTransmission = Forest.exp(lambda);
         this.setState(0);
     }
 
-    public Sensor getReceiver(){
+    public Sensor getReceiver() {
         List<Sensor> candidates = new ArrayList<>();
-        candidates.addAll(neighbors);
-        for(Sensor s : candidates)
-            if (s.state != 0)
-                candidates.remove(s);
+        for(Sensor s : neighbors)
+            if (s.state == 0)
+                candidates.add(s);
+        if(candidates.isEmpty())
+            return null; //TODO: non può mai accadere
         return candidates.get(Forest.rand(0, candidates.size()));
     }
 
@@ -73,8 +72,8 @@ public class Sensor implements Comparable<Sensor> {
         return state;
     }
 
-    public double getNext_transmission() {
-        return next_transmission;
+    public double getNextTransmission() {
+        return nextTransmission;
     }
 
     public void setState(int state) {
@@ -96,7 +95,7 @@ public class Sensor implements Comparable<Sensor> {
 
     @Override
     public int compareTo(Sensor o) {
-        return next_transmission.compareTo(o.getNext_transmission());
+        return nextTransmission.compareTo(o.getNextTransmission());
     }
 
 

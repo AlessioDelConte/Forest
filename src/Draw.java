@@ -184,6 +184,7 @@ public final class Draw implements ActionListener, MouseListener, MouseMotionLis
     // the frame for drawing to the screen
     private JFrame frame = new JFrame();
 
+
     // mouse state
     private boolean isMousePressed = false;
     private double mouseX = 0;
@@ -196,6 +197,13 @@ public final class Draw implements ActionListener, MouseListener, MouseMotionLis
     // event-based listeners
     private final ArrayList<DrawListener> listeners = new ArrayList<DrawListener>();
 
+    //the slider
+    private JSlider slider = new JSlider();
+    private JFrame frame2 = new JFrame();
+    private JLabel label = new JLabel("Rate: ");
+
+    //value of slider
+    private int speed = 0;
 
     /**
      * Initializes an empty drawing object with the given name.
@@ -217,6 +225,17 @@ public final class Draw implements ActionListener, MouseListener, MouseMotionLis
     private void init() {
         if (frame != null) frame.setVisible(false);
         frame = new JFrame();
+        slider = new JSlider();
+        frame2.setLayout(new FlowLayout());
+
+        slider.addChangeListener(e -> sliderChanged());
+        slider.setMaximum(100);
+        slider.setMinimum(0);
+        slider.setMajorTickSpacing(25);
+        slider.setMinorTickSpacing(5);
+        slider.setPaintTicks(true);
+        slider.setPaintLabels(true);
+
         offscreenImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         onscreenImage  = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         offscreen = offscreenImage.createGraphics();
@@ -239,10 +258,8 @@ public final class Draw implements ActionListener, MouseListener, MouseMotionLis
         // frame stuff
         ImageIcon icon = new ImageIcon(onscreenImage);
         draw = new JLabel(icon);
-
         draw.addMouseListener(this);
         draw.addMouseMotionListener(this);
-
         frame.setContentPane(draw);
         frame.addKeyListener(this);    // JLabel cannot get keyboard focus
         frame.setResizable(false);
@@ -253,8 +270,22 @@ public final class Draw implements ActionListener, MouseListener, MouseMotionLis
         frame.pack();
         frame.requestFocusInWindow();
         frame.setVisible(true);
+        frame2.setResizable(false);
+        if(frame2.isVisible()) {
+            frame2.add(label);
+            frame2.add(slider);
+        }
+        frame2.pack();
+        frame2.setVisible(true);
     }
 
+    private void sliderChanged() {
+        speed = slider.getValue();
+    }
+
+    public int getSpeed() {
+        return speed;
+    }
 
     /**
      * Sets the upper-left hand corner of the drawing window to be (x, y), where (0, 0) is upper left.
@@ -1338,5 +1369,6 @@ public final class Draw implements ActionListener, MouseListener, MouseMotionLis
         for (DrawListener listener : listeners)
             listener.keyPressed(e.getKeyCode());
     }
+
 
 }

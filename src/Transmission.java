@@ -21,7 +21,7 @@ public class Transmission implements Comparable<Transmission>{
         return state;
     }
 
-    public double getRemaining_time() {
+    public double getRemainingTime() {
         return remaining_time;
     }
 
@@ -35,6 +35,6 @@ public class Transmission implements Comparable<Transmission>{
 
     @Override
     public int compareTo(Transmission o) {
-        return remaining_time.compareTo(o.getRemaining_time());
+        return remaining_time.compareTo(o.getRemainingTime());
     }
 }
