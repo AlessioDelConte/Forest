@@ -19,7 +19,7 @@ public class Sensor implements Comparable<Sensor> {
     private int y_position;
     private int power;
     private int sensibility;
-    private int state;      // 0: ascolto; 1: invio; 2:ricezione
+    private int state;      // 0: ascolto; 1: trasmissione; 2:ricezione
     private Double nextTransmission;
 
     private List<Sensor> neighbors = new ArrayList<>();
@@ -39,13 +39,10 @@ public class Sensor implements Comparable<Sensor> {
     }
 
     public Sensor getReceiver() {
-        List<Sensor> candidates = new ArrayList<>();
-        for(Sensor s : neighbors)
-            if (s.state == 0)
-                candidates.add(s);
-        if(candidates.isEmpty())
-            return null; //TODO: non può mai accadere
-        return candidates.get(Forest.rand(0, candidates.size()));
+       if (neighbors.isEmpty())
+            return null;
+       else
+            return neighbors.get(Forest.rand(0, neighbors.size()));
     }
 
     public int getId() {
@@ -96,6 +93,13 @@ public class Sensor implements Comparable<Sensor> {
     @Override
     public int compareTo(Sensor o) {
         return nextTransmission.compareTo(o.getNextTransmission());
+    }
+
+    public boolean CSMA(){
+        for(Sensor s : neighbors)
+            if (s.getState()==1)
+                return false;
+        return true;
     }
 
 

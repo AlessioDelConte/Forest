@@ -52,40 +52,37 @@ public class Field implements DrawListener {
             }
     }
 
-    public List<Transmission> getTransmissionList() {
-        return transmissionList;
+    public List<Sensor> transmitterCandidates() {
+        List<Sensor> candidates = new ArrayList<>();
+        for(Sensor s : sensorList)
+            if (s.getState() == 0) // supponiamo che possa trasmettere solo chi è nello stato attesa
+                candidates.add(s); //TODO: ricordiamo che ogni transmitter ha almeno un receiver
+        if(candidates.isEmpty())
+            return null; //TODO: non può mai accadere
+        return candidates;
     }
+
 
     void runSimulation() throws InterruptedException {
         sim_time=0.0;
         for (int i = 0; i <= 5000; i++) {
             Transmission endOfTransmissionEvent = null;
-            Sensor sender = Collections.min(readyToTransmit(sensorList));
+            Sensor sender = Collections.min(readyToTransmit(transmitterCandidates()));
 
             if (!transmissionList.isEmpty())
                 endOfTransmissionEvent = Collections.min(transmissionList);
-            System.out.println(sender.getNextTransmission());
 
             if (endOfTransmissionEvent == null || sender.getNextTransmission() < endOfTransmissionEvent.getRemainingTime()) {
-                inTransmission(sender);
-            } else {
+                tryTransmission(sender);
+            }else {
                 endOfTransmission(endOfTransmissionEvent);
             }
-            waitForChange();
+
+            System.out.println(Collections.min(readyToTransmit(sensorList)).getNextTransmission());
+            Thread.sleep(draw.getSpeed()*10);
         }
     }
 
-    private void waitForChange() throws InterruptedException {
-        double sending = Collections.min(readyToTransmit(sensorList)).getNextTransmission();
-        double transmission, cont;
-
-        if(!transmissionList.isEmpty()) {
-            transmission = Collections.min(transmissionList).getRemainingTime();
-            cont = transmission <  sending ? transmission : sending;
-        }else cont = sending;
-        System.out.println(cont);
-        Thread.sleep((long) (cont * (draw.getSpeed() + 1) * 100000));
-    }
 
     private List<Sensor> readyToTransmit(List<Sensor> sensorList) {
         List<Sensor> transmitters = new ArrayList<>();
@@ -98,7 +95,8 @@ public class Field implements DrawListener {
 
     private void stepForward(double x) {
         for (Sensor s : sensorList)
-            s.setNextTransmission(s.getNextTransmission() - x);
+            if (s.getState() == 0)
+                s.setNextTransmission(s.getNextTransmission() - x); //TODO: decrementiamo solo quelli che sono in attesa
         for (Transmission t : transmissionList)
             t.setRemaining_time(t.getRemainingTime() - x);
         sim_time += x;
@@ -180,41 +178,32 @@ public class Field implements DrawListener {
 
     public void drawSensor(Sensor s) {
         Point p = new Point(s.getX_position(), s.getY_position());
-        //System.out.println("Inserting:       " + p);
-
-        // compare each pixel (i, j) and find nearest point
-        //draw.setPenColor(Color.getHSBColor((float) Math.random(), .7f, .7f));
-        /*
-        for (int i = 0; i < SIZE_X; i++) {
-            for (int j = 0; j < SIZE_Y; j++) {
-                Point q = new Point(i, j);
-                if ((nearest[i][j] == null) || (q.distance(p) < q.distance(nearest[i][j]))) {
-                    nearest[i][j] = p;
-                    draw.filledSquare(i+0.5, j+0.5, 0.5);
-                }
-            }
-        }*/
 
         // draw the point afterwards
         draw.setPenRadius(0.003);
         draw.setPenColor(Color.BLACK);
         draw.filledSquare(s.getX_position() / 10, s.getY_position() / 10, pixel_shape);
         draw.circle(s.getX_position() / 10, s.getY_position() / 10, (int) s.distance() / 10);
-        //System.out.println("Done processing: " + p);
     }
 
-    private void inTransmission(Sensor s) {
-        System.out.println(s.getNextTransmission());
+    private void tryTransmission(Sensor s) throws InterruptedException {
+        if (s.CSMA()) {
+            Sensor receiver = s.getReceiver();  //TODO: se non ci sono receiver?
+            Transmission t = new Transmission(s, receiver, 0.005); //TODO: da mettere MU
+            transmissionList.add(t);
+
+            colorSensorPoint(t.getSender(), Color.yellow, Color.BLUE);
+            colorSensorPoint(t.getReceiver(), Color.BLACK, Color.white);
+        }else{
+            colorSensorPoint(s, Color.RED, Color.BLUE);
+            Thread.sleep(160);
+            colorSensorPoint(s, Color.BLACK, Color.BLACK);
+        }
         stepForward(s.getNextTransmission());
-        Sensor receiver = s.getReceiver();  //TODO: se non ci sono receiver?
         s.setNextTransmission(Forest.exp(LAMBDA));
-        Transmission t = new Transmission(s, receiver, 0.0005); //TODO: da mettere MU
-
-
-        colorSensorPoint(t.getSender(), Color.yellow, Color.BLUE);
-        colorSensorPoint(t.getReceiver(), Color.BLACK, Color.white);
-        transmissionList.add(t);
     }
+
+
 
     private void endOfTransmission(Transmission t) throws InterruptedException {
         stepForward(t.getRemainingTime());
