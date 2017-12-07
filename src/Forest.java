@@ -9,7 +9,9 @@ import java.util.concurrent.ThreadLocalRandom;
 import static java.lang.Math.log;
 
 /**
- * @author Alessio
+ * @author Alessio Del Conte
+ * @author Filippo Maganza
+ *
  */
 
 public class Forest {

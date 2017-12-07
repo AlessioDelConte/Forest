@@ -11,8 +11,11 @@ import static java.lang.Math.log10;
 import static java.lang.Math.pow;
 
 /**
- * @author Alessio
+ * @author Filippo Maganza
+ * @author Alessio Del Conte
+ *
  */
+
 public class Sensor implements Comparable<Sensor> {
     private int id;
     private int x_position;

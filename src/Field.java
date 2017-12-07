@@ -11,7 +11,12 @@ import java.util.List;
 
 import static java.lang.Math.*;
 
-
+/**
+ *
+ * @author Filippo Maganza
+ * @author Alessio Del Conte
+ *
+ */
 public class Field implements DrawListener {
     private static final double LAMBDA = 3.0;
     private static final double MU = 3.0;
