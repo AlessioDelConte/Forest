@@ -14,7 +14,12 @@ import static java.lang.Math.log;
  *
  * @author Alessio
  */
+
 public class Forest {
+
+    public static final int D0=100;
+
+
     public static void main(String[] args) throws InterruptedException {
         Field field = new Field (15000,10000);
 

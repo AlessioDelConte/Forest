@@ -1,5 +1,5 @@
 public class Transmission implements Comparable<Transmission>{
-    private boolean state;
+    private boolean state; // true per adesso non ci sono state interferenze false altrimenti
     private Double remaining_time;
     private Sensor sender;
     private Sensor receiver;
@@ -11,6 +11,10 @@ public class Transmission implements Comparable<Transmission>{
         this.receiver = receiver;
         sender.setState(1);
         receiver.setState(2);
+    }
+
+    public void setState(boolean state) {
+        this.state = state;
     }
 
     public void setRemaining_time(double remaining_time) {

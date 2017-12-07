@@ -87,7 +87,7 @@ public class Sensor implements Comparable<Sensor> {
     }
     
     public double distance(){
-        return pow(10, (-sensibility + power - (20*log10(100) + 20*log10(0.9*pow(10,9)) - 147.55))/35)*100;
+        return pow(10, (-sensibility + power - (20*log10(Forest.D0) + 20*log10(0.9*pow(10,9)) - 147.55))/35)*100;
     }
 
     @Override
