@@ -9,8 +9,8 @@ import java.util.List;
 
 import static java.lang.Math.log10;
 import static java.lang.Math.pow;
+
 /**
- *
  * @author Alessio
  */
 public class Sensor implements Comparable<Sensor> {
@@ -24,14 +24,10 @@ public class Sensor implements Comparable<Sensor> {
 
     private List<Sensor> neighbors = new ArrayList<>();
 
-    public void setNextTransmission(Double nextTransmission) {
-        this.nextTransmission = nextTransmission;
-    }
-
-    public Sensor(int id, int x_position, int y_position, int power, int sensibility, double lambda) {
+    Sensor(int id, int x_position, int y_position, int power, int sensibility, double lambda) {
         this.id = id;
-        this.x_position = x_position ;
-        this.y_position = y_position ;
+        this.x_position = x_position;
+        this.y_position = y_position;
         this.power = power;
         this.sensibility = sensibility;
         this.nextTransmission = Forest.exp(lambda);
@@ -39,10 +35,8 @@ public class Sensor implements Comparable<Sensor> {
     }
 
     public Sensor getReceiver() {
-       if (neighbors.isEmpty())
-            return null;
-       else
-            return neighbors.get(Forest.rand(0, neighbors.size()));
+        if (neighbors.isEmpty()) return null;
+        else return neighbors.get(Forest.rand(0, neighbors.size()));
     }
 
     public int getId() {
@@ -69,25 +63,29 @@ public class Sensor implements Comparable<Sensor> {
         return state;
     }
 
-    public double getNextTransmission() {
-        return nextTransmission;
-    }
-
     public void setState(int state) {
         this.state = state;
     }
 
-    public void setNeighbors(List<Sensor> sensors) {
+    public double getNextTransmission() {
+        return nextTransmission;
+    }
 
-        neighbors = sensors ;
+    public void setNextTransmission(Double nextTransmission) {
+        this.nextTransmission = nextTransmission;
     }
 
     public List<Sensor> getNeighbors() {
         return neighbors;
     }
-    
-    public double distance(){
-        return pow(10, (-sensibility + power - (20*log10(Forest.D0) + 20*log10(0.9*pow(10,9)) - 147.55))/35)*100;
+
+    public void setNeighbors(List<Sensor> sensors) {
+
+        neighbors = sensors;
+    }
+
+    public double distance() {
+        return pow(10, (-sensibility + power - (20 * log10(Forest.D0) + 20 * log10(0.9 * pow(10, 9)) - 147.55)) / 35) * 100;
     }
 
     @Override
@@ -95,10 +93,9 @@ public class Sensor implements Comparable<Sensor> {
         return nextTransmission.compareTo(o.getNextTransmission());
     }
 
-    public boolean CSMA(){
-        for(Sensor s : neighbors)
-            if (s.getState()==1)
-                return false;
+    public boolean CSMA() {
+        for (Sensor s : neighbors)
+            if (s.getState() == 1) return false;
         return true;
     }
 

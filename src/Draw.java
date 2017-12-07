@@ -203,7 +203,7 @@ public final class Draw implements ActionListener, MouseListener, MouseMotionLis
     private JLabel label = new JLabel("Rate: ");
 
     //value of slider
-    private int speed = 0;
+    private int speed = 50;
 
     /**
      * Initializes an empty drawing object with the given name.
@@ -1012,9 +1012,7 @@ public final class Draw implements ActionListener, MouseListener, MouseMotionLis
      * Copies the offscreen buffer to the onscreen buffer, pauses for t milliseconds
      * and enables double buffering.
      * @param t number of milliseconds
-     * @deprecated replaced by {@link #enableDoubleBuffering()}, {@link #show()}, and {@link #pause(int t)}
      */
-    @Deprecated
     public void show(int t) {
         show();
         pause(t);

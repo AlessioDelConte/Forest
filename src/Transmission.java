@@ -4,7 +4,7 @@ public class Transmission implements Comparable<Transmission>{
     private Sensor sender;
     private Sensor receiver;
 
-    public Transmission(Sensor sender, Sensor receiver, double remaining_time) {
+    Transmission(Sensor sender, Sensor receiver, double remaining_time) {
         this.state = true;
         this.remaining_time =remaining_time;
         this.sender = sender;
