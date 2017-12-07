@@ -17,7 +17,7 @@ import static java.lang.Math.log10;
 public class Field implements DrawListener {
     private static final double LAMBDA = 3.0;
     private static final double MU = 3.0;
-    private static final double EPSILON =0.03;
+    private static final double EPSILON = 2400;
     private static final int SIZE_X = 1500;
     private static final int SIZE_Y = 1000;
     private static final int POWER = -14;
@@ -141,15 +141,16 @@ public class Field implements DrawListener {
     private double calculateSNIR(Transmission t){
         double interference=0;
         for(Transmission t2: transmissionList)
-            if (t2 != t)
-                interference += powerReceived(t2.getSender(),t.getReceiver());
-        System.out.println(powerReceived(t.getSender(),t.getReceiver())/interference);
-        return powerReceived(t.getSender(),t.getReceiver())/interference;
+            if (t2 != t) {
+                interference += powerReceived(t2.getSender(), t.getReceiver());
+            }
+        System.out.println(powerReceived(t.getSender(), t.getReceiver()) - interference);
+        return powerReceived(t.getSender(),t.getReceiver()) - interference;
     }
 
 
     private double powerReceived(Sensor sender,Sensor receiver){
-        return sender.getPower()-(20*log10(Forest.D0) + 20*log10(0.9*pow(10,9))) - 37*log10(eucDistance(sender,receiver)/Forest.D0);
+        return sender.getPower()-(20*log10(Forest.D0) + 20*log10(0.9*pow(10,9))- 147.55) - 37*log10(eucDistance(sender,receiver)/Forest.D0);
     }
 
     private double eucDistance(Sensor s1, Sensor s2){
