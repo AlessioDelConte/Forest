@@ -17,7 +17,7 @@ import static java.lang.Math.log10;
 public class Field implements DrawListener {
     private static final double LAMBDA = 3.0;
     private static final double MU = 3.0;
-    private static final double EPSILON = 2400;
+    private static final double EPSILON = 15;
     private static final int SIZE_X = 1500;
     private static final int SIZE_Y = 1000;
     private static final int POWER = -14;
@@ -142,10 +142,11 @@ public class Field implements DrawListener {
         double interference=0;
         for(Transmission t2: transmissionList)
             if (t2 != t) {
-                interference += powerReceived(t2.getSender(), t.getReceiver());
+                interference += 10*pow(10,powerReceived(t2.getSender(), t.getReceiver()));
             }
-        System.out.println(powerReceived(t.getSender(), t.getReceiver()) - interference);
-        return powerReceived(t.getSender(),t.getReceiver()) - interference;
+        double snir=log10(10*pow(10,powerReceived(t.getSender(),t.getReceiver())) / interference);
+        System.out.println(snir);
+        return snir;
     }
 
 
