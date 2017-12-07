@@ -15,12 +15,15 @@ import static java.lang.Math.log;
 public class Forest {
 
     public static final int D0 = 100;
-    public static final boolean GRAPHICS = true;
+    public static final boolean GRAPHICS = false;
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) {
         Field field = new Field(15000, 10000);
 
         field.setNeighbors();
+        if (field.numberDisconnected() > 0)
+            System.out.println(field.numberDisconnected());
+
         for (Sensor s : field.getSensorList())
             field.drawSensor(s);
         field.show();
@@ -28,7 +31,6 @@ public class Forest {
         field.runSimulation();
 
 
-        //field.show();
         System.out.println(field.mediumDistribution());
         System.out.println(field.numberDisconnected());
 

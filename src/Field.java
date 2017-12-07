@@ -14,20 +14,22 @@ import static java.lang.Math.*;
 
 public class Field implements DrawListener {
     private static final double LAMBDA = 3.0;
-    private static final double MU = 3.0;
+    private static final double MU = 150.0;
     private static final double EPSILON = 15;
     private static final int SIZE_X = 1500;
     private static final int SIZE_Y = 1000;
-    private static final int POWER = -14;
+    private static final int POWER = -9; //il minimo per essere sempre collegato è 9.65
     private static final int SENSIBILITY = -110;
 
     private static final int pixel_shape = 3;
-    private final Point[][] nearest = new Point[SIZE_X][SIZE_Y];  // which point is pixel (i, j) nearest?
     private final Draw draw = Forest.GRAPHICS ? new Draw() : null;
 
     private List<Transmission> transmissionList;
     private List<Sensor> sensorList;
     private double sim_time;
+    private double goodTransmissionTime = 0;
+    private double numberOfTransmission = 0;
+    private double numberOfGoodTransmission = 0;
 
     Field(int length, int height) {
         if (Forest.GRAPHICS) {
@@ -45,17 +47,17 @@ public class Field implements DrawListener {
 
         int id = 0;
         for (int i = 300; i <= length; i += 300)
-            for (int j = 303; j <= height; j += 303) {
+            for (int j = 303; j <= height; j += 303)
                 sensorList.add(new Sensor(id++, Forest.rand(i - 300, i), Forest.rand(j - 303, j), POWER, SENSIBILITY, LAMBDA));
-            }
+
     }
 
-    private List<Sensor> transmitterCandidates() {
+    private List<Sensor> transmitterCandidates(){
         List<Sensor> candidates = new ArrayList<>();
         for (Sensor s : sensorList)
-            if (s.getState() == 0) // supponiamo che possa trasmettere solo chi è nello stato attesa
+            if (s.getState() == 0) {// supponiamo che possa trasmettere solo chi è nello stato attesa
                 candidates.add(s); //TODO: ricordiamo che ogni transmitter ha almeno un receiver
-        if (candidates.isEmpty()) return null; //TODO: non può mai accadere
+            }
         return candidates;
     }
 
@@ -64,26 +66,34 @@ public class Field implements DrawListener {
         sim_time = 0.0;
         for (int i = 0; i <= 5000; i++) {
             Transmission endOfTransmissionEvent = null;
-            Sensor sender = Collections.min(readyToTransmit(transmitterCandidates()));
+            Sensor sender = Collections.min(transmitterCandidates());
 
-            if (!transmissionList.isEmpty()) endOfTransmissionEvent = Collections.min(transmissionList);
+            if (!transmissionList.isEmpty())
+                endOfTransmissionEvent = Collections.min(transmissionList);
 
-            if (endOfTransmissionEvent == null || sender.getNextTransmission() < endOfTransmissionEvent.getRemainingTime())
+            if (endOfTransmissionEvent == null || sender.getNextTransmission() < endOfTransmissionEvent.getRemainingTime()) {
                 tryTransmission(sender);
-            else endOfTransmission(endOfTransmissionEvent);
+            } else {
+                endOfTransmission(endOfTransmissionEvent);
+            }
 
-            if(Forest.GRAPHICS) show(draw.getSpeed() * 10);
+            if (Forest.GRAPHICS) show(draw.getSpeed() * 10);
         }
+        System.out.println("Rapporto buone/totali : " + numberOfGoodTransmission / (numberOfTransmission - transmissionList.size()));
     }
 
     private void tryTransmission(Sensor s) {
         if (s.CSMA()) {
+
             Sensor receiver = s.getReceiver();  //TODO: se non ci sono receiver?
-            Transmission t = new Transmission(s, receiver, 0.005); //TODO: da mettere MU
+            Transmission t = new Transmission(s, receiver, Forest.exp(MU)); //TODO: da mettere MU
             transmissionList.add(t);
+            numberOfTransmission++;
             SNIR();
+
             colorSensor(t.getSender(), Color.yellow, Color.BLUE);
             colorSensor(t.getReceiver(), Color.BLACK, Color.white);
+
         } else {
             colorSensor(s, Color.RED, Color.BLUE);
             colorSensor(s, Color.BLACK, Color.BLACK);
@@ -99,9 +109,13 @@ public class Field implements DrawListener {
         t.getReceiver().setState(0);
         transmissionList.remove(t);
 
-        if (t.isState()) colorSensor(t.getSender(), Color.GREEN, Color.GREEN);
-
-        else colorSensor(t.getSender(), Color.RED, Color.RED);
+        if (t.isState()) {
+            colorSensor(t.getSender(), Color.GREEN, Color.GREEN);
+            goodTransmissionTime += t.getTotalTime();
+            numberOfGoodTransmission++;
+        } else {
+            colorSensor(t.getSender(), Color.RED, Color.RED);
+        }
 
         show(20);
         colorSensor(t.getSender(), Color.BLACK, Color.BLACK);
@@ -110,16 +124,14 @@ public class Field implements DrawListener {
     }
 
     private void SNIR() {
-        for (Transmission t : transmissionList) {
-            if (t.isState() && calculateSNIR(t) <= EPSILON) {
-                t.setState(false);
-            }
-        }
         for (Transmission t : transmissionList)
-            if (!t.isState()) {
+            if (t.isState() && calculateSNIR(t) <= EPSILON)
+                t.setState(false);
+
+        for (Transmission t : transmissionList)
+            if (!t.isState())
                 colorSensor(t.getSender(), Color.RED, Color.RED);
 
-            }
         show(20);
     }
 
@@ -134,15 +146,17 @@ public class Field implements DrawListener {
     private List<Sensor> readyToTransmit(List<Sensor> sensorList) {
         List<Sensor> transmitters = new ArrayList<>();
         for (Sensor s : sensorList) {
-            if (s.getState() == 0) transmitters.add(s);
+            if (s.getState() == 0)
+                transmitters.add(s);
         }
         return transmitters;
     }
 
     private void stepForward(double x) {
         for (Sensor s : sensorList)
-            if (s.getState() == 0)
+            if (s.getState() == 0) {
                 s.setNextTransmission(s.getNextTransmission() - x); //TODO: decrementiamo solo quelli che sono in attesa
+            }
         for (Transmission t : transmissionList)
             t.setRemaining_time(t.getRemainingTime() - x);
         sim_time += x;
@@ -152,8 +166,9 @@ public class Field implements DrawListener {
         List<Sensor> neighbors = new ArrayList<>();
         for (Sensor s2 : sensorList) {
             if (s2 != s1) {
-                if (eucDistance(s1, s2) <= s1.distance())  //formula calcolo massima distanza di trasmissione SPL
+                if (eucDistance(s1, s2) <= s1.distance()) {  //formula calcolo massima distanza di trasmissione SPL
                     neighbors.add(s2);
+                }
             }
         }
         return neighbors;
@@ -202,6 +217,13 @@ public class Field implements DrawListener {
     }
 
 
+    private double powerReceived(Sensor sender, Sensor receiver) {
+        return sender.getPower() - (20 * log10(Forest.D0) + 20 * log10(0.9 * pow(10, 9)) - 147.55) - 37 * log10(eucDistance(sender, receiver) / Forest.D0);
+    }
+
+    private double eucDistance(Sensor s1, Sensor s2) {
+        return sqrt(pow(s1.getX_position() - s2.getX_position(), 2) + pow(s1.getY_position() - s2.getY_position(), 2));
+    }
 
     /* -----------------------------------------------------------------------------------------------------------------
 
@@ -271,13 +293,5 @@ public class Field implements DrawListener {
 
     void show(int i) {
         if (Forest.GRAPHICS) draw.show(i);
-    }
-
-    private double powerReceived(Sensor sender, Sensor receiver) {
-        return sender.getPower() - (20 * log10(Forest.D0) + 20 * log10(0.9 * pow(10, 9)) - 147.55) - 37 * log10(eucDistance(sender, receiver) / Forest.D0);
-    }
-
-    private double eucDistance(Sensor s1, Sensor s2) {
-        return sqrt(pow(s1.getX_position() - s2.getX_position(), 2) + pow(s1.getY_position() - s2.getY_position(), 2));
     }
 }
