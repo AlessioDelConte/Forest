@@ -1,10 +1,9 @@
 /**
  * @author Alessio Del Conte
  * @author Filippo Maganza
- *
  */
 
-public class Transmission implements Comparable<Transmission>{
+public class Transmission implements Comparable<Transmission> {
     private boolean state; // true per adesso non ci sono state interferenze false altrimenti
     private Double remaining_time;
     private Double totalTime;

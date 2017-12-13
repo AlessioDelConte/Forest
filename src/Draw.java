@@ -598,7 +598,7 @@ public final class Draw implements ActionListener, MouseListener, MouseMotionLis
         double hs = factorY(2*r);
         if (ws <= 1 && hs <= 1) pixel(x, y);
         else offscreen.draw(new Ellipse2D.Double(xs - ws/2, ys - hs/2, ws, hs));
-        draw();
+        //draw();
     }
 
     /**
@@ -720,7 +720,7 @@ public final class Draw implements ActionListener, MouseListener, MouseMotionLis
         double hs = factorY(2*r);
         if (ws <= 1 && hs <= 1) pixel(x, y);
         else offscreen.fill(new Rectangle2D.Double(xs - ws/2, ys - hs/2, ws, hs));
-        draw();
+        //draw();
     }
 
 

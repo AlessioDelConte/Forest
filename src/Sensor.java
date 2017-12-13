@@ -24,6 +24,7 @@ public class Sensor implements Comparable<Sensor> {
     private int sensibility;
     private int state;      // 0: ascolto; 1: trasmissione; 2:ricezione
     private Double nextTransmission;
+    private double distance;
 
     private List<Sensor> neighbors = new ArrayList<>();
 
@@ -35,11 +36,11 @@ public class Sensor implements Comparable<Sensor> {
         this.sensibility = sensibility;
         this.nextTransmission = Forest.exp(lambda);
         this.setState(0);
+        this.distance = pow(10, (-sensibility + power - (20 * log10(Forest.D0) + 20 * log10(0.9 * pow(10, 9)) - 147.55)) / 35) * 100;
     }
 
     public Sensor getReceiver() {
-        if (neighbors.isEmpty()) return null;
-        else return neighbors.get(Forest.rand(0, neighbors.size()));
+        return neighbors.get(Forest.rand(0, neighbors.size()));
     }
 
     public int getId() {
@@ -82,13 +83,10 @@ public class Sensor implements Comparable<Sensor> {
         return neighbors;
     }
 
-    public void setNeighbors(List<Sensor> sensors) {
+    public void setNeighbors(List<Sensor> sensors) { neighbors = sensors; }
 
-        neighbors = sensors;
-    }
-
-    public double distance() {
-        return pow(10, (-sensibility + power - (20 * log10(Forest.D0) + 20 * log10(0.9 * pow(10, 9)) - 147.55)) / 35) * 100;
+    public double getDistance() {
+        return distance;
     }
 
     @Override
