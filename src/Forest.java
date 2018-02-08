@@ -17,9 +17,9 @@ import static java.lang.Math.log;
 public class Forest {
 
     public static final int D0 = 100;
-    public static final boolean GRAPHICS = false;
-    public static final String distType = "random";
-    public static final int distance = 300;
+    public static final boolean GRAPHICS = true;
+    public static final String distType = "rand1om";
+    public static final int distance = 500;
 
     public static void main(String[] args) {
         Field field = new Field(15000, 10000);
