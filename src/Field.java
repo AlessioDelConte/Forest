@@ -21,8 +21,8 @@ public class Field implements DrawListener {
     private static final double EPSILON = 10;
     private static final int SIZE_X = 1500;
     private static final int SIZE_Y = 1000;
-    private static final int POWER = -10; //il minimo per essere sempre collegato è 9.65
     private static final int SENSIBILITY = -110;
+    private static final double POWER = -(-SENSIBILITY -(20*log10(Forest.D0) + 20*log10(0.9 * pow(10, 9)) - 147.55) -35*log10((Forest.distance * (Forest.distType.equals("random") ? 2 : 1)) / Forest.D0)) + 5; //il minimo per essere sempre collegato è 9.65 con dist casuale blocchi da 300, -20 circa per distribuzione ottima punto preciso
 
     private static final int pixel_shape = 3;
     private final Draw draw = Forest.GRAPHICS ? new Draw() : null;
@@ -40,7 +40,7 @@ public class Field implements DrawListener {
 
     Field(int length, int height) {
         if (Forest.GRAPHICS) {
-            draw.setCanvasSize(1900, 1050);
+            draw.setCanvasSize(1440, 830);
             draw.setXscale(0, SIZE_X);
             draw.setYscale(0, SIZE_Y);
             draw.addListener(this);
@@ -51,12 +51,10 @@ public class Field implements DrawListener {
         sensorList = new ArrayList<>();
         transmissionList = new ArrayList<>();
         sim_time = 0.0;
-
         int id = 0;
-        for (int i = 300; i <= length; i += 300)
-            for (int j = 303; j <= height; j += 303)
-                sensorList.add(new Sensor(id++, Forest.rand(i - 300, i), Forest.rand(j - 303, j), POWER,
-                        SENSIBILITY, LAMBDA));
+        for (int i = Forest.distance; i <= length; i += Forest.distance)
+            for (int j = Forest.distance + 3; j <= height; j += Forest.distance + 3)
+                sensorList.add(new Sensor(id++, i, j, POWER, SENSIBILITY, LAMBDA, Forest.distType));
         setNeighbors(); //MOLTO PESANTE CON MOLTI SENSORI
     }
 
@@ -78,7 +76,7 @@ public class Field implements DrawListener {
         }
         System.out.println("Rapporto buone/totali : " + numberOfGoodTransmission / (numberOfTransmission -
                 transmissionList.size()) + " CSMA: " + numberOfCsma + " sim_time: " + sim_time + " trasmissioni ok : " +
-                "" + goodTransmissionTime + " trasmissioni bad: " + badTransmissionTime);
+                "" + goodTransmissionTime + " trasmissioni bad: " + badTransmissionTime + " %: " + goodTransmissionTime / (goodTransmissionTime+badTransmissionTime));
     }
 
     private void tryTransmission(Sensor s) {
