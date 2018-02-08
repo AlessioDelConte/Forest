@@ -10,8 +10,8 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define Q_LIMIT 200001 /*queue capacity*/
-#define NUM_MAX_EVENTS 200000
+#define Q_LIMIT 20000 /*queue capacity*/
+#define NUM_MAX_EVENTS 2000000
 #define BUSY 1
 #define IDLE 0
 #define PACKET_BIG 1024
@@ -155,7 +155,7 @@ void arrival(Pacchetto packet) {
     arrival_small++;
 
   /*schedule next arrival*/
-  time_next_event[0] = sim_time + exponential(LAMBDA);
+  time_next_event[0] = sim_time + exponential(LAMBDA); // definisce il rate degli arrival
 
   if (server_status == BUSY) {
 
@@ -238,7 +238,7 @@ int main() {
   printf("The usage is %f %% \n", (busy_time * 100) / (busy_time + idle_time));
   printf("dbig %d , dsmall %d,nD %d\n", nBig, nSmall, nD);
   printf("abig %d , asmall %d\n", arrival_big, arrival_small);
-  printf("The throughput is %f Byte/s\n", (nBig * PACKET_BIG + nSmall * PACKET_SMALL) / sim_time);
+  printf("The throughput is %f unit of the packet dimension/unit of simulation time\n", (nBig * PACKET_BIG + nSmall * PACKET_SMALL) / sim_time);
   printf("The expected number of customer is queue is %f \n", area_num_in_q / sim_time);
   printf("The medium waiting time is %f\n", total_service_time / (n_arrival - num_in_q));
   printf("%d %d %d\n", n_arrival, nBig, maxQ);
