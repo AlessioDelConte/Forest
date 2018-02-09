@@ -10,13 +10,13 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define Q_LIMIT 20000 /*queue capacity*/
-#define NUM_MAX_EVENTS 2000000
+#define Q_LIMIT 100 /*queue capacity*/
+#define NUM_MAX_EVENTS 200000
 #define BUSY 1
 #define IDLE 0
 #define PACKET_BIG 1024
 #define PACKET_SMALL 64
-
+#define RATE_SMALL 0.2
 #define NUMEVENT 2
 
 /*Parameters*/
@@ -33,8 +33,7 @@ typedef struct pacchetto {
 double sim_time;                  /*simulated time*/
 int server_status;                /*Is the server busy or idle?*/
 int num_in_q;                     /*number of jobs in queue*/
-double time_next_event[NUMEVENT]; /*event calendar. position 0 arrivals,
-position 1 departures*/
+double time_next_event[NUMEVENT]; /*event calendar. position 0 arrivals, position 1 departures*/
 int next_event_type;              /*type of next event, 0 arrival, 1 departure*/
 Pacchetto queue[Q_LIMIT];
 
@@ -48,7 +47,7 @@ double total_service_time = 0.0;
 double in_q_time;
 Pacchetto in_exec; /*Pacchetto che è in esecuzione al momento*/
 int maxQ = -1;
-int nBig = 0, nSmall = 0, nD = 0, arrival_big = 0, arrival_small = 0;
+int nBig = 0, nSmall = 0, arrival_big = 0, arrival_small = 0;
 
 void scambia(int x, int y) {
   Pacchetto prov = queue[x];
@@ -117,7 +116,6 @@ void initialize(void) {
 
 /*Determine next event*/
 void timing() {
-
   int found = 0;
   double min;
   int i;
@@ -155,23 +153,19 @@ void arrival(Pacchetto packet) {
     arrival_small++;
 
   /*schedule next arrival*/
-  time_next_event[0] = sim_time + exponential(LAMBDA); // definisce il rate degli arrival
+  time_next_event[0] = sim_time + exponential(LAMBDA); // schedula il prossimo arrival
 
   if (server_status == BUSY) {
-
-    if (in_exec->RPT < packet->RPT) {
-      add(packet);
-    } else {
-
-      total_service_time -= in_q_time;                 /*Ritornando in coda il tempo che aspetto può variare*/
-
+    if (in_exec->RPT < packet->RPT)                 //Il nuovo pacchetto ha un tempo di esecuzione più lungo
+      add(packet);                                  //Viene aggiunto alla coda il nuovo pacchetto
+    else {
+      total_service_time -= in_q_time;              /*Ritornando in coda il tempo che aspetto può variare*/
       add(in_exec);                                 /*Il pacchetto in esecuzione torna nella coda*/
-      in_exec = packet;                            /*Il nuovo pacchetto appena arrivato diventa il pacchetto in esecuzione*/
-      time_next_event[1] = sim_time + packet->RPT;/*La prossima departure si farà al completamento del pacchetto, sempre se non ne arrivi uno più piccolo*/
+      in_exec = packet;                             /*Il nuovo pacchetto appena arrivato diventa il pacchetto in esecuzione*/
+      time_next_event[1] = sim_time + packet->RPT;  /*La prossima departure si farà al completamento del pacchetto, sempre se non ne arrivi uno più piccolo*/
     }
   } else {
-    in_q_time = 0.0;                                   /*Resetto il tempo in cui sono in coda (non ci sono mai stato)*/
-
+    in_q_time = 0.0;                                /*Resetto il tempo in cui sono in coda (non ci sono mai stato)*/
     in_exec = packet;
     server_status = BUSY;
     /*schedule event for departure*/
@@ -186,11 +180,10 @@ void departure() {
     nBig++;
   else
     nSmall++;
-  nD++;
 
-  if (num_in_q == 0) { /*none in queue!*/
+  if (num_in_q == 0) {                            /*none in queue!*/
     server_status = IDLE;
-    time_next_event[1] = -1.0; /*no further departure*/
+    time_next_event[1] = -1.0;                    /*no further departure*/
   } else {
     in_exec = extractMin();                       /*il pacchetto da eseguire è il minore in coda*/
     time_next_event[1] = sim_time + in_exec->RPT;
@@ -224,8 +217,8 @@ int main() {
         Pacchetto p = (Pacchetto)malloc(sizeof(struct pacchetto));
         /* pacchetto tipo 1 */
         occ = (rand() * 1.0 / RAND_MAX);
-        p->RPT = occ >= 0.1 ? PACKET_BIG : PACKET_SMALL;
-        p->type = occ >= 0.1 ? 1 : 2;
+        p->RPT = occ >= RATE_SMALL ? PACKET_BIG : PACKET_SMALL;
+        p->type = occ >= RATE_SMALL ? 1 : 2;
         p->arrival_time = sim_time;
         arrival(p);
         break;
@@ -234,13 +227,13 @@ int main() {
         break;
     }
   }
-  printf("simtime, ndeparture %f %d\n", sim_time, NUM_MAX_EVENTS - n_arrival);
-  printf("The usage is %f %% \n", (busy_time * 100) / (busy_time + idle_time));
-  printf("dbig %d , dsmall %d,nD %d\n", nBig, nSmall, nD);
-  printf("abig %d , asmall %d\n", arrival_big, arrival_small);
-  printf("The throughput is %f unit of the packet dimension/unit of simulation time\n", (nBig * PACKET_BIG + nSmall * PACKET_SMALL) / sim_time);
-  printf("The expected number of customer is queue is %f \n", area_num_in_q / sim_time);
-  printf("The medium waiting time is %f\n", total_service_time / (n_arrival - num_in_q));
-  printf("%d %d %d\n", n_arrival, nBig, maxQ);
+  printf("Simtime: %f, Number of departure: %d\n", sim_time, NUM_MAX_EVENTS - n_arrival);
+  printf("The usage is: %f %% \n", (busy_time * 100) / (busy_time + idle_time));
+  printf("dbig: %d, dsmall: %d\n", nBig, nSmall);
+  printf("abig: %d, asmall: %d\n", arrival_big, arrival_small);
+  printf("The throughput is: %f unit of the packet dimension/unit of simulation time (Max = 1)\n", (nBig * PACKET_BIG + nSmall * PACKET_SMALL) / sim_time);
+  printf("The expected number of customer is queue is: %f \n", area_num_in_q / sim_time);
+  printf("The medium waiting time is: %f\n", total_service_time / (n_arrival - num_in_q));
+  printf("Number of arrival: %d  Max number of packet in q:%d\n", n_arrival, maxQ);
   return 0;
 }
