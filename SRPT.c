@@ -11,7 +11,7 @@
 #include <time.h>
 
 #define Q_LIMIT 100 /*queue capacity*/
-#define NUM_MAX_EVENTS 200000
+#define NUM_MAX_EVENTS 2000000
 #define BUSY 1
 #define IDLE 0
 #define PACKET_BIG 1024
@@ -20,7 +20,7 @@
 #define NUMEVENT 2
 
 /*Parameters*/
-#define LAMBDA 0.0011
+#define LAMBDA 0.000001
 #define MU 3.0
 
 typedef struct pacchetto {
@@ -43,7 +43,7 @@ double busy_time; /* per l'utilizzo */
 double time_last_event; /*epoch of last processed event*/
 double area_num_in_q;   /*to compute the expected number of customers*/
 int n_arrival;
-double total_service_time = 0.0;
+double total_waiting_time = 0.0, total_response_time = 0.0;
 double in_q_time;
 Pacchetto in_exec; /*Pacchetto che è in esecuzione al momento*/
 int maxQ = -1;
@@ -69,8 +69,6 @@ Pacchetto extractMin() {  /*Estraggo il Pacchetto con size minore dalla coda*/
 
 void add(Pacchetto p) {   /*Aggiungo il pacchetto in modo ordinato nella coda*/
   int i = num_in_q;
-  p->arrival_time = sim_time; /*IMPORTANTE : Sono entrato nella coda, setto il mio arrival_time
-                               *ogni volta che lo faccio (problema 1)*/
   num_in_q = num_in_q + 1;
   maxQ = num_in_q > maxQ ? num_in_q : maxQ;
   if (num_in_q > Q_LIMIT) {
@@ -159,7 +157,6 @@ void arrival(Pacchetto packet) {
     if (in_exec->RPT < packet->RPT)                 //Il nuovo pacchetto ha un tempo di esecuzione più lungo
       add(packet);                                  //Viene aggiunto alla coda il nuovo pacchetto
     else {
-      total_service_time -= in_q_time;              /*Ritornando in coda il tempo che aspetto può variare*/
       add(in_exec);                                 /*Il pacchetto in esecuzione torna nella coda*/
       in_exec = packet;                             /*Il nuovo pacchetto appena arrivato diventa il pacchetto in esecuzione*/
       time_next_event[1] = sim_time + packet->RPT;  /*La prossima departure si farà al completamento del pacchetto, sempre se non ne arrivi uno più piccolo*/
@@ -180,16 +177,14 @@ void departure() {
     nBig++;
   else
     nSmall++;
-
+  total_response_time += sim_time - in_exec->arrival_time;
+  total_waiting_time += sim_time - in_exec->arrival_time - (in_exec->type == 1 ? PACKET_BIG : PACKET_SMALL);
   if (num_in_q == 0) {                            /*none in queue!*/
     server_status = IDLE;
     time_next_event[1] = -1.0;                    /*no further departure*/
   } else {
     in_exec = extractMin();                       /*il pacchetto da eseguire è il minore in coda*/
     time_next_event[1] = sim_time + in_exec->RPT;
-
-    in_q_time = sim_time - in_exec->arrival_time; /*calcolo il tempo che sono stato in coda */
-    total_service_time += in_q_time;              /*aggiungo al tempo totale in passato in coda il mio tempo (del pacchetto in questione)*/
   }
 }
 
@@ -229,11 +224,12 @@ int main() {
   }
   printf("Simtime: %f, Number of departure: %d\n", sim_time, NUM_MAX_EVENTS - n_arrival);
   printf("The usage is: %f %% \n", (busy_time * 100) / (busy_time + idle_time));
+  printf("The medium response time is: %f\n", total_response_time/ (nBig+nSmall));
   printf("dbig: %d, dsmall: %d\n", nBig, nSmall);
   printf("abig: %d, asmall: %d\n", arrival_big, arrival_small);
-  printf("The throughput is: %f unit of the packet dimension/unit of simulation time (Max = 1)\n", (nBig * PACKET_BIG + nSmall * PACKET_SMALL) / sim_time);
+  printf("The throughput is: %f unit of packet size/unit of simulation time (Max = 1)\n", (nBig * PACKET_BIG + nSmall * PACKET_SMALL) / sim_time);
   printf("The expected number of customer is queue is: %f \n", area_num_in_q / sim_time);
-  printf("The medium waiting time is: %f\n", total_service_time / (n_arrival - num_in_q));
+  printf("The medium waiting time is: %f\n", total_waiting_time / (nBig + nSmall));
   printf("Number of arrival: %d  Max number of packet in q:%d\n", n_arrival, maxQ);
   return 0;
 }
