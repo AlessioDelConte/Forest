@@ -47,7 +47,7 @@ double total_waiting_time = 0.0, total_response_time = 0.0;
 double in_q_time;
 Pacchetto in_exec; /*Pacchetto che è in esecuzione al momento*/
 int maxQ = -1;
-int departureBig = 0, departureSmall = 0, arrival_big = 0, arrival_small = 0;
+int departure_big = 0, departure_small = 0, arrival_big = 0, arrival_small = 0;
 
 void scambia(int x, int y) {
   Pacchetto prov = queue[x];
@@ -173,12 +173,13 @@ void arrival(Pacchetto packet) {
 /*Handle departure*/
 void departure() {
   //statistics
-  if (in_exec->type == PACKET_BIG)
-    departureBig++;
-  else
-    departureSmall++;
+  in_exec->type == PACKET_BIG ? departure_big++ : departure_small++;
+
   total_response_time += sim_time - in_exec->arrival_time;
   total_waiting_time += sim_time - in_exec->arrival_time - in_exec->type;
+
+  free(in_exec);
+  
   if (num_in_q == 0) {                            /*none in queue!*/
     server_status = IDLE;
     time_next_event[1] = -1.0;                    /*no further departure*/
@@ -233,13 +234,13 @@ int main() {
 
   //OUTPUT
   printf("Simtime: %f, Number of departure: %d\n", sim_time, NUM_MAX_EVENTS - n_arrival);
-  printf("dbig: %d, dsmall: %d\n", departureBig, departureSmall);
+  printf("dbig: %d, dsmall: %d\n", departure_big, departure_small);
   printf("abig: %d, asmall: %d\n", arrival_big, arrival_small);
 
   printf("The usage is: %f %% \n", (busy_time * 100) / (busy_time + idle_time));
-  printf("The throughput is: %f unit of packet size/unit of simulation time (Max = 1)\n", (departureBig * PACKET_BIG + departureSmall * PACKET_SMALL) / sim_time);
-  printf("The medium response time is: %f\n", total_response_time/ (departureBig+departureSmall));
-  printf("The medium waiting time is: %f\n", total_waiting_time / (departureBig + departureSmall));
+  printf("The throughput is: %f unit of packet size/unit of simulation time (Max = 1)\n", (departure_big * PACKET_BIG + departure_small * PACKET_SMALL) / sim_time);
+  printf("The medium response time is: %f\n", total_response_time/ (departure_big+departure_small));
+  printf("The medium waiting time is: %f\n", total_waiting_time / (departure_big + departure_small));
   printf("The expected number of customer is queue is: %f \n", area_num_in_q / sim_time);
   printf("Number of arrival: %d  Max number of packet in q:%d\n", n_arrival, maxQ);
 

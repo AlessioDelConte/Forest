@@ -151,6 +151,8 @@ void departure() {
   total_response_time += sim_time - in_exec->arrival_time;
   total_waiting_time += sim_time - in_exec->arrival_time - in_exec->type;
 
+  free(in_exec);
+
   if (num_in_q == 0) {                            /*none in queue!*/
     server_status = IDLE;
     time_next_event[1] = -1.0;                    /*no further departure*/
