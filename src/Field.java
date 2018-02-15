@@ -22,7 +22,7 @@ public class Field implements DrawListener {
     private static final int SIZE_X = 1500;
     private static final int SIZE_Y = 1000;
     private static final int SENSIBILITY = -110;
-    private static final double POWER = -(-SENSIBILITY -(20*log10(Forest.D0) + 20*log10(0.9 * pow(10, 9)) - 147.55) -35*log10((Forest.distance * (Forest.distType.equals("random") ? 2 : 1)) / Forest.D0)) + 5; //il minimo per essere sempre collegato è 9.65 con dist casuale blocchi da 300, -20 circa per distribuzione ottima punto preciso
+    private static final double POWER = -(-SENSIBILITY - (20 * log10(Forest.D0) + 20 * log10(0.9 * pow(10, 9)) - 147.55) - 35 * log10((Forest.distance * (Forest.distType.equals("random") ? 2 : 1)) / Forest.D0)) + 5; //il minimo per essere sempre collegato è 9.65 con dist casuale blocchi da 300, -20 circa per distribuzione ottima punto preciso
 
     private static final int pixel_shape = 3;
     private final Draw draw = Forest.GRAPHICS ? new Draw() : null;
@@ -74,12 +74,13 @@ public class Field implements DrawListener {
 
             if (Forest.GRAPHICS) show(draw.getSpeed() * 10);
         }
-        System.out.println("Rapporto buone/totali : " + numberOfGoodTransmission / (numberOfTransmission -
-                transmissionList.size()) + " CSMA: " + numberOfCsma + " sim_time: " + sim_time + " trasmissioni ok : " +
-                "" + goodTransmissionTime + " trasmissioni bad: " + badTransmissionTime + " %: " + goodTransmissionTime / (goodTransmissionTime+badTransmissionTime));
+        System.out.println(" Rapporto buone/totali : " + numberOfGoodTransmission / (numberOfTransmission -
+                transmissionList.size()) + "\n CSMA: " + numberOfCsma + "\n sim_time: " + sim_time + "\n trasmissioni ok : " +
+                "" + goodTransmissionTime + " trasmissioni bad: " + badTransmissionTime + "\n %: " + goodTransmissionTime / (goodTransmissionTime + badTransmissionTime));
     }
 
     private void tryTransmission(Sensor s) {
+        stepForward(s.getNextTransmission());  // TODO : ???
         if (s.CSMA()) {
             Sensor receiver = s.getReceiver();
             Transmission t = new Transmission(s, receiver, Forest.exp(MU)); //TODO: da mettere MU
@@ -96,7 +97,7 @@ public class Field implements DrawListener {
             colorSensor(s, Color.BLACK, Color.BLACK);
         }
         show(20);
-        stepForward(s.getNextTransmission());
+
         s.setNextTransmission(Forest.exp(LAMBDA));
     }
 
@@ -141,10 +142,12 @@ public class Field implements DrawListener {
 
     private void stepForward(double x) {
         for (Sensor s : sensorList)
-            if (s.getState() == 0)
-                s.setNextTransmission(s.getNextTransmission() - x); //TODO: decrementiamo solo quelli che sono in attesa
-        for (Transmission t : transmissionList)
-            t.setRemaining_time(t.getRemainingTime() - x);
+            if (s.getState() == 0) {
+                s.setNextTransmission(s.getNextTransmission() - x); // decrementiamo i tempi di attesa per la prossima trasmissione dei pacchetti in coda
+            }
+        for (Transmission t : transmissionList) {
+            t.setRemaining_time(t.getRemainingTime() - x);          // faccio avanzare i tempi di trasmissione di chi sta trasmettendo
+        }
         sim_time += x;
     }
 
