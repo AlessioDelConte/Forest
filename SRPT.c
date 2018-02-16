@@ -27,7 +27,7 @@
 typedef struct pacchetto {
   double RPT; // Remaining process time
   double arrival_time;
-  int type; // Tipologia del pacchetto (PACKET_BIG,PACKET_SMALL)
+  double type; // Tipologia del pacchetto (PACKET_BIG,PACKET_SMALL)
 } * Pacchetto;
 
 
@@ -159,10 +159,7 @@ void timing() {
 
 /*Handle arrival event*/
 void arrival(Pacchetto packet) {
-  if (packet->type == PACKET_BIG)
-    arrival_big++;
-  else
-    arrival_small++;
+  packet->type == PACKET_BIG ? arrival_big++ : arrival_small++;
 
   /*schedule next arrival*/
   time_next_event[0] = sim_time + exponential(LAMBDA); // schedula il prossimo arrival
@@ -222,11 +219,11 @@ int main(int argc,char * argv[]) {
     statistics();
     switch (next_event_type) {
       case 0:
-      
+
         n_arrival++;
         Pacchetto p = (Pacchetto)malloc(sizeof(struct pacchetto));
 
-        if (argc>0 && strcmp(argv[1],"exp")==0){
+        if (argc > 1 && strcmp(argv[1],"exp")==0){
           p->RPT = exponential(MU);
           p->type = p->RPT;
           p->arrival_time = sim_time;
@@ -247,7 +244,7 @@ int main(int argc,char * argv[]) {
   }
 
   //OUTPUT
-  if (argc>0 && strcmp(argv[1],"exp")==0){
+  if (argc > 1 && strcmp(argv[1],"exp") == 0){
     printf("EXPONENTIAL PACKET SIZE:\n" );
     printf("Expected value of the exponential distribution: %f\n",1/MU);
   }else{
