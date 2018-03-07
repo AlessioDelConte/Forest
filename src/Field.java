@@ -16,8 +16,8 @@ import static java.lang.Math.*;
  * @author Alessio Del Conte
  */
 public class Field implements DrawListener {
-    private static final double LAMBDA = 3.0;
-    private static final double MU = 150.0;
+    private static final double LAMBDA = 50.0;
+    private static final double MU = 50.0;
     private static final double EPSILON = 10;
     private static final int SIZE_X = 1500;
     private static final int SIZE_Y = 1000;
@@ -30,6 +30,7 @@ public class Field implements DrawListener {
     private List<Transmission> transmissionList;
     private List<Sensor> sensorList;
 
+    
     //statistics
     private double sim_time;
     private double goodTransmissionTime = 0;
@@ -37,6 +38,7 @@ public class Field implements DrawListener {
     private double numberOfGoodTransmission = 0;
     private double numberOfCsma = 0;
     private double badTransmissionTime = 0;
+    private double totalResponseTime = 0;
 
     Field(int length, int height) {
         if (Forest.GRAPHICS) {
@@ -74,24 +76,31 @@ public class Field implements DrawListener {
 
             if (Forest.GRAPHICS) show(draw.getSpeed() * 10);
         }
-        System.out.println(" Rapporto buone/totali : " + numberOfGoodTransmission / (numberOfTransmission -
-                transmissionList.size()) + "\n CSMA: " + numberOfCsma + "\n sim_time: " + sim_time + "\n trasmissioni ok : " +
-                "" + goodTransmissionTime + " trasmissioni bad: " + badTransmissionTime + "\n %: " + goodTransmissionTime / (goodTransmissionTime + badTransmissionTime));
+        System.out.println(
+                " ef : " + numberOfGoodTransmission / (numberOfTransmission - transmissionList.size())
+                + "\n good bad :" + numberOfGoodTransmission + "  " + (numberOfTransmission - numberOfGoodTransmission)
+                + "\n CSMA: " + numberOfCsma
+                + "\n sim_time: " + sim_time
+                + "\n trasmissioni ok : " +
+                + goodTransmissionTime + " trasmissioni bad: " + badTransmissionTime + "  % " + goodTransmissionTime / (goodTransmissionTime + badTransmissionTime) * 100
+                + "\n  Response Time: " + totalResponseTime / numberOfGoodTransmission
+                + "\n  thro of a node: " + (numberOfGoodTransmission / sim_time / 570));
     }
 
+
     private void tryTransmission(Sensor s) {
-        stepForward(s.getNextTransmission());  // TODO : ???
+        stepForward(s.getNextTransmission());
         if (s.CSMA()) {
             Sensor receiver = s.getReceiver();
             Transmission t = new Transmission(s, receiver, Forest.exp(MU)); //TODO: da mettere MU
             transmissionList.add(t);
-            numberOfTransmission++;
+
             SNIR();
 
             colorSensor(t.getSender(), Color.yellow, Color.BLUE);
             colorSensor(t.getReceiver(), Color.BLACK, Color.white);
 
-        } else {
+        } else {                                                            //Va contato o meno come trasmissione fallita?
             numberOfCsma++;
             colorSensor(s, Color.RED, Color.BLUE);
             colorSensor(s, Color.BLACK, Color.BLACK);
@@ -106,10 +115,14 @@ public class Field implements DrawListener {
         t.getSender().setState(0);
         t.getReceiver().setState(0);
         transmissionList.remove(t);
+        numberOfTransmission++;
 
         if (t.isState()) {
             goodTransmissionTime += t.getTotalTime();
             numberOfGoodTransmission++;
+            t.getSender().setReceiver(null);
+            totalResponseTime += t.getSender().getReponseTime();
+            t.getSender().setReponseTime(0);
         } else
             badTransmissionTime += t.getTotalTime();
 
@@ -141,10 +154,15 @@ public class Field implements DrawListener {
     }
 
     private void stepForward(double x) {
-        for (Sensor s : sensorList)
+        for (Sensor s : sensorList) {
             if (s.getState() == 0) {
                 s.setNextTransmission(s.getNextTransmission() - x); // decrementiamo i tempi di attesa per la prossima trasmissione dei pacchetti in coda
+
             }
+            if(s.getState() == 1){
+                s.setReponseTime(s.getReponseTime() + x);
+            }
+        }
         for (Transmission t : transmissionList) {
             t.setRemaining_time(t.getRemainingTime() - x);          // faccio avanzare i tempi di trasmissione di chi sta trasmettendo
         }

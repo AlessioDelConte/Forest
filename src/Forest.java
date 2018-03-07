@@ -18,7 +18,7 @@ public class Forest {
 
     public static final int D0 = 100;
     public static final boolean GRAPHICS = true;
-    public static final String distType = "rand1om";
+    public static final String distType = "random";
     public static final int distance = 500;
 
     public static void main(String[] args) {
@@ -27,7 +27,7 @@ public class Forest {
         for (Sensor s : field.getSensorList())
             field.drawSensor(s);
         field.show();
-
+        System.out.println(field.getSensorList().size());
         field.runSimulation();
 
         field.mediumDistribution();
