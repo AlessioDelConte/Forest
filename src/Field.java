@@ -30,7 +30,8 @@ public class Field implements DrawListener {
     private List<Transmission> transmissionList;
     private List<Sensor> sensorList;
 
-    
+
+
     //statistics
     private double sim_time;
     private double goodTransmissionTime = 0;
@@ -78,13 +79,13 @@ public class Field implements DrawListener {
         }
         System.out.println(
                 " ef : " + numberOfGoodTransmission / (numberOfTransmission - transmissionList.size())
-                + "\n good bad :" + numberOfGoodTransmission + "  " + (numberOfTransmission - numberOfGoodTransmission)
+                + "\n good :" + numberOfGoodTransmission + "  bad :" + (numberOfTransmission - numberOfGoodTransmission)
                 + "\n CSMA: " + numberOfCsma
                 + "\n sim_time: " + sim_time
                 + "\n trasmissioni ok : " +
                 + goodTransmissionTime + " trasmissioni bad: " + badTransmissionTime + "  % " + goodTransmissionTime / (goodTransmissionTime + badTransmissionTime) * 100
-                + "\n  Response Time: " + totalResponseTime / numberOfGoodTransmission
-                + "\n  thro of a node: " + (numberOfGoodTransmission / sim_time / 570));
+                + "\n Response Time: " + totalResponseTime / numberOfGoodTransmission
+                + "\n thro of a node: " + (numberOfGoodTransmission / sim_time / this.getSensorList().size()));
     }
 
 
