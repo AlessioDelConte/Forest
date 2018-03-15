@@ -21,7 +21,7 @@
 #define NUMEVENT 2
 
 /*Parameters*/
-#define LAMBDA 0.0011
+#define LAMBDA 0.1
 #define MU 0.001202
 
 typedef struct pacchetto {
@@ -236,6 +236,7 @@ int main(int argc,char * argv[]) {
 
   printf("The usage is: %f %% \n", (busy_time * 100) / (busy_time + idle_time));
   printf("The throughput is: %f unit of packet size/unit of simulation time (Max = 1)\n", (departures_total_size) / sim_time);
+  printf("The throughput(tps) is: %f \n", (departure_big + departure_small) / sim_time);
   printf("The medium response time is: %f\n", total_response_time/ (departure_big + departure_small));
   printf("The medium waiting time is: %f\n", total_waiting_time / (departure_big + departure_small));
   printf("The expected number of customer is queue is: %f \n", area_num_in_q / sim_time);
