@@ -93,7 +93,7 @@ public class Field implements DrawListener {
         stepForward(s.getNextTransmission());
         if (s.CSMA()) {
             Sensor receiver = s.getReceiver();
-            Transmission t = new Transmission(s, receiver, Forest.exp(MU)); //TODO: da mettere MU
+            Transmission t = new Transmission(s, receiver, Forest.exp(MU));
             transmissionList.add(t);
 
             SNIR();
@@ -101,7 +101,7 @@ public class Field implements DrawListener {
             colorSensor(t.getSender(), Color.yellow, Color.BLUE);
             colorSensor(t.getReceiver(), Color.BLACK, Color.white);
 
-        } else {                                                            //Va contato o meno come trasmissione fallita?
+        } else {
             numberOfCsma++;
             colorSensor(s, Color.RED, Color.BLUE);
             colorSensor(s, Color.BLACK, Color.BLACK);
