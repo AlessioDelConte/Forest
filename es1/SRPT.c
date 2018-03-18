@@ -21,7 +21,7 @@
 #define NUMEVENT 2
 
 /*Parameters*/
-#define LAMBDA 0.03
+#define LAMBDA 0.2
 #define MU 0.001202
 
 typedef struct pacchetto {
