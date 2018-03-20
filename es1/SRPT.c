@@ -21,7 +21,7 @@
 #define NUMEVENT 2
 
 /*Parameters*/
-#define LAMBDA 0.2
+#define LAMBDA 0.0011
 #define MU 0.001202
 
 typedef struct pacchetto {
@@ -44,6 +44,8 @@ double busy_time; /* per l'utilizzo */
 double time_last_event; /*epoch of last processed event*/
 double area_num_in_q;   /*to compute the expected number of customers*/
 int n_arrival;
+double total_big_wt;
+double total_small_wt;
 double total_waiting_time;
 double total_response_time;
 double in_q_time;
@@ -112,6 +114,8 @@ void initialize(void) {
   time_last_event = 0.0;
   area_num_in_q = 0.0;
   n_arrival = 0;
+  total_big_wt=0.0;
+  total_small_wt=0.0;
   total_waiting_time = 0.0;
   total_response_time = 0.0;
   departures_total_size = 0.0;
@@ -188,6 +192,10 @@ void departure() {
   departures_total_size += in_exec->type;
   total_response_time += sim_time - in_exec->arrival_time;
   total_waiting_time += sim_time - in_exec->arrival_time - in_exec->type;
+  if (in_exec->type == PACKET_BIG)
+    total_big_wt += sim_time - in_exec->arrival_time - in_exec->type;
+  else
+    total_small_wt += sim_time - in_exec->arrival_time - in_exec->type;
 
   free(in_exec);
 
@@ -262,6 +270,11 @@ int main(int argc,char * argv[]) {
   printf("The medium response time is: %f\n", total_response_time/ (departure_big + departure_small));
   printf("The medium waiting time is: %f\n", total_waiting_time / (departure_big + departure_small));
   printf("The expected number of customer is queue is: %f \n", area_num_in_q / sim_time);
+
+  printf("The waiting time for the big packets is: %f \n", total_big_wt / departure_big);
+  printf("The waiting time for the big packets is: %f \n", total_small_wt / departure_small);
+
+  printf("%f %f %f \n",total_waiting_time,total_big_wt,total_small_wt );
 
   return 0;
 }
