@@ -21,8 +21,8 @@
 #define NUMEVENT 2
 
 /*Parameters*/
-#define LAMBDA 0.1
-#define MU 0.001202
+#define LAMBDA 0.004
+#define MU 0.1
 
 typedef struct pacchetto {
   double RPT; // Remaining process time
