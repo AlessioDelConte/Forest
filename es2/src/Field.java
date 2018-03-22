@@ -16,7 +16,7 @@ import static java.lang.Math.*;
  * @author Alessio Del Conte
  */
 public class Field implements DrawListener {
-    private static final double LAMBDA = 2.0;
+    private static final double LAMBDA = 20;
     private static final double MU = 150.0;
     private static final double EPSILON = 10;
     private static final int SIZE_X = 1500;
@@ -29,7 +29,6 @@ public class Field implements DrawListener {
 
     private List<Transmission> transmissionList;
     private List<Sensor> sensorList;
-
 
 
     //statistics
